@@ -14,6 +14,7 @@ public class ID3DecisionTree
 	private static ArrayList<String> computedClassifications = new ArrayList<>();
 	private static ArrayList<ArrayList<String>> meta = new ArrayList<>();
 	private static ArrayList<ArrayList<Pair<String, Integer>>> dataCounts = new ArrayList<ArrayList<Pair<String, Integer>>>();
+	private static ArrayList<Double> informationGain = new ArrayList<Double>();
 
 	public static void main(String[] args)
 	{
@@ -185,6 +186,39 @@ public class ID3DecisionTree
 				}
 			}
 		}
+		for(int i = 0; i < meta.size(); i++)
+		{
+			informationGain.add(0.0);
+		//	System.out.println(informationGain.get(i));
+		}
+		double infoGain = 0.0;
+		int totalRows = 0;
+		for(int i = 0; i < meta.get(meta.size()-1).size(); i++)
+		{
+			totalRows += dataCounts.get(dataCounts.size()-1).get(i).getValue();
+		}
+		for(int i = 0; i < dataCounts.get(dataCounts.size()-1).size(); i++)
+		{
+			double val = (double)dataCounts.get(dataCounts.size()-1).get(i).getValue() / (double)totalRows;
+			infoGain += val * log2(val);
+		}
+		infoGain *= -1;
+		informationGain.set(informationGain.size() - 1, infoGain);
+		for(int i = 0; i < dataCounts.size() - 1; i++)
+		{
+			infoGain = 0.0;
+			for(int j = 0; j < dataCounts.get(i).size(); j++)
+			{
+				double val = (double)dataCounts.get(i).get(j).getValue() / (double)totalRows;
+				System.out.println(dataCounts.get(i).get(j).getValue());
+				System.out.println(totalRows);
+				System.out.println(val);
+				infoGain += val * log2(val);
+			}
+			System.out.println(infoGain);
+			informationGain.set(i, infoGain);
+		}
+		System.out.println(informationGain);
 		System.out.println("System has been trained.");
 	}
 	
@@ -279,5 +313,11 @@ public class ID3DecisionTree
 	private static String findClassification(String[] data) 
 	{
 		return "";
+	}	
+	
+	private static Double log2(Double n)
+	{
+		double v = (double)Math.log(n) / (double)Math.log(2);
+		return v;
 	}
 }
