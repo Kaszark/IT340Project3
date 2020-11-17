@@ -215,37 +215,58 @@ public class ID3DecisionTree
 				double c = 0.0;
 				for(int k = 0; k < dataCounts.get(i).size() / dataCounts.get(dataCounts.size() -1).size(); k++)
 				{
-					c = (double)dataCounts.get(dataCounts.size() - 1).get(0).getValue();
+					c = (double)dataCounts.get(dataCounts.size() - 1).get(count).getValue();
 					double val;
 					//System.out.println("j = " + j);
 					//System.out.println("num = " + dataCounts.get(i).size());
 					//System.out.println("divide = " + dataCounts.get(dataCounts.size()-1).get(count).getValue());
 					
 					val = (double)dataCounts.get(i).get(k+j).getValue() / (double)dataCounts.get(dataCounts.size()-1).get(count).getValue();
+					//val = (double)dataCounts.get(i).get(k+j).getValue() / (double)totalRows;
 				
-					System.out.println("count = " + dataCounts.get(i).get(k+j).getValue());
-					System.out.println("divide = " + dataCounts.get(dataCounts.size()-1).get(count).getValue());
+					//System.out.println("count = " + dataCounts.get(i).get(k+j).getValue());
+					//System.out.println("divide = " + dataCounts.get(dataCounts.size()-1).get(count).getValue());
 					//System.out.println(totalRows);
-					System.out.println("val = " + val);
+					//System.out.println("val = " + val);
 					//System.out.println("log val = " + log2(val));
 					if(val == 0)
 						ig -= val;
 					else
-						ig -= val * log2(val);
-					
-					System.out.println("ig = " + ig);
+						ig -= (val * log2(val));
+					if(i==3)
+						System.out.println("ig = " + ig);
 				}
 				count++;
-				//System.out.println("c = " + c);
+				if(i==3)
+				{
+				System.out.println("c = " + c);
+				System.out.println("rows = " + totalRows);
+				}
 				ig *= (c / (double)totalRows);
 				infoGain += ig;
+				if(i==3)
+					System.out.println("info gain = " + infoGain);
 			}
 			infoGain = informationGain.get(informationGain.size() - 1) - infoGain;
-			System.out.println(infoGain);
-			informationGain.set(i, infoGain);
+			if(i==3)
+				System.out.println("info gain att" + i + " = " + infoGain);
+			informationGain.set(i, -infoGain);
 		}
 		System.out.println(informationGain);
 		System.out.println("System has been trained.");
+		for(int i = 0; i < dataCounts.get(3).size(); i++)
+		{
+			System.out.print(dataCounts.get(3).get(i).getKey() + "=");
+			System.out.print(dataCounts.get(3).get(i).getValue() + " ");
+		}
+		System.out.println();
+		for(int i = 0; i < dataCounts.get(6).size(); i++)
+		{
+			System.out.print(dataCounts.get(6).get(i).getKey() + "=");
+			System.out.print(dataCounts.get(6).get(i).getValue() + " ");
+		}
+		System.out.println();
+		/*
 		for(int i = 0; i < dataCounts.size(); i++)
 		{
 			for(int j = 0; j < dataCounts.get(i).size(); j++)
@@ -254,7 +275,7 @@ public class ID3DecisionTree
 				System.out.print(dataCounts.get(i).get(j).getValue() + " ");
 			}
 			System.out.println();
-		}
+		}*/
 	}
 	
 	private static void classify(String inF, String outF) {
