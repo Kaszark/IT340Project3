@@ -89,6 +89,7 @@ public class ID3DecisionTree
 		BufferedReader dbr = null;
 		meta.clear();
 		dataCounts.clear();
+		informationGain.clear();
 		String line = "";
 		try {
 			mbr = new BufferedReader(new FileReader(mFile));
@@ -189,7 +190,6 @@ public class ID3DecisionTree
 		for(int i = 0; i < meta.size(); i++)
 		{
 			informationGain.add(0.0);
-		//	System.out.println(informationGain.get(i));
 		}
 		double infoGain = 0.0;
 		int totalRows = 0;
@@ -207,19 +207,54 @@ public class ID3DecisionTree
 		for(int i = 0; i < dataCounts.size() - 1; i++)
 		{
 			infoGain = 0.0;
-			for(int j = 0; j < dataCounts.get(i).size(); j++)
+			int count = 0;
+			for(int j = 0; j < dataCounts.get(i).size(); j+= dataCounts.get(i).size() / dataCounts.get(dataCounts.size() -1).size())
 			{
-				double val = (double)dataCounts.get(i).get(j).getValue() / (double)totalRows;
-				System.out.println(dataCounts.get(i).get(j).getValue());
-				System.out.println(totalRows);
-				System.out.println(val);
-				infoGain += val * log2(val);
+				//System.out.println("j = " + j);
+				double ig = 0.0;
+				double c = 0.0;
+				for(int k = 0; k < dataCounts.get(i).size() / dataCounts.get(dataCounts.size() -1).size(); k++)
+				{
+					c = (double)dataCounts.get(dataCounts.size() - 1).get(0).getValue();
+					double val;
+					//System.out.println("j = " + j);
+					//System.out.println("num = " + dataCounts.get(i).size());
+					//System.out.println("divide = " + dataCounts.get(dataCounts.size()-1).get(count).getValue());
+					
+					val = (double)dataCounts.get(i).get(k+j).getValue() / (double)dataCounts.get(dataCounts.size()-1).get(count).getValue();
+				
+					System.out.println("count = " + dataCounts.get(i).get(k+j).getValue());
+					System.out.println("divide = " + dataCounts.get(dataCounts.size()-1).get(count).getValue());
+					//System.out.println(totalRows);
+					System.out.println("val = " + val);
+					//System.out.println("log val = " + log2(val));
+					if(val == 0)
+						ig -= val;
+					else
+						ig -= val * log2(val);
+					
+					System.out.println("ig = " + ig);
+				}
+				count++;
+				//System.out.println("c = " + c);
+				ig *= (c / (double)totalRows);
+				infoGain += ig;
 			}
+			infoGain = informationGain.get(informationGain.size() - 1) - infoGain;
 			System.out.println(infoGain);
 			informationGain.set(i, infoGain);
 		}
 		System.out.println(informationGain);
 		System.out.println("System has been trained.");
+		for(int i = 0; i < dataCounts.size(); i++)
+		{
+			for(int j = 0; j < dataCounts.get(i).size(); j++)
+			{
+				System.out.print(dataCounts.get(i).get(j).getKey() + "=");
+				System.out.print(dataCounts.get(i).get(j).getValue() + " ");
+			}
+			System.out.println();
+		}
 	}
 	
 	private static void classify(String inF, String outF) {
