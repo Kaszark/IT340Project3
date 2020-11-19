@@ -208,15 +208,16 @@ public class ID3DecisionTree
 		{
 			infoGain = 0.0;
 			
-			for(int j = 0; j < dataCounts.get(dataCounts.size() - 1).size(); j++)
+			for(int j = 0; j < dataCounts.get(i).size() / dataCounts.get(dataCounts.size() - 1).size(); j++)
 			{
 				double ig = 0.0;
 				double divide = 0.0;
+				//System.out.println(j);
 				for(int k = j; k < dataCounts.get(i).size(); k+= dataCounts.get(i).size() / dataCounts.get(dataCounts.size() - 1).size())
 				{
 					divide += (double) dataCounts.get(i).get(k).getValue();
 				}
-				
+				//System.out.println("k += " + dataCounts.get(i).size() / dataCounts.get(dataCounts.size() - 1).size());
 				System.out.print(divide + "/" + totalRows +" (");
 				for(int k = j; k < dataCounts.get(i).size(); k+= dataCounts.get(i).size() / dataCounts.get(dataCounts.size() - 1).size())
 				{
@@ -257,19 +258,6 @@ public class ID3DecisionTree
 		}
 		System.out.println(informationGain);
 		System.out.println("System has been trained.");
-		/*
-		for(int i = 0; i < dataCounts.get(3).size(); i++)
-		{
-			System.out.print(dataCounts.get(3).get(i).getKey() + "=");
-			System.out.print(dataCounts.get(3).get(i).getValue() + " ");
-		}
-		System.out.println();
-		for(int i = 0; i < dataCounts.get(6).size(); i++)
-		{
-			System.out.print(dataCounts.get(6).get(i).getKey() + "=");
-			System.out.print(dataCounts.get(6).get(i).getValue() + " ");
-		}
-		System.out.println();*/
 		
 		for(int i = 0; i < dataCounts.size(); i++)
 		{
