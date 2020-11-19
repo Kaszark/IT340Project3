@@ -4,9 +4,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
-
 import java.util.Objects;
+import java.util.Scanner;
 
 public class ID3DecisionTree {
 	private static ArrayList<String> classifications = new ArrayList<>();
@@ -173,73 +172,7 @@ public class ID3DecisionTree {
 				}
 			}
 		}
-		for (int i = 0; i < meta.size(); i++) {
-			informationGain.add(0.0);
-		}
-		double infoGain = 0.0;
-		int totalRows = 0;
-		for (int i = 0; i < meta.get(meta.size() - 1).size(); i++) {
-			totalRows += dataCounts.get(dataCounts.size() - 1).get(i).getValue();
-		}
-		for (int i = 0; i < dataCounts.get(dataCounts.size() - 1).size(); i++) {
-			double val = (double) dataCounts.get(dataCounts.size() - 1).get(i).getValue() / (double) totalRows;
-			infoGain += val * log2(val);
-		}
-		infoGain *= -1;
-		informationGain.set(informationGain.size() - 1, infoGain);
-		for (int i = 0; i < dataCounts.size() - 1; i++) {
-			infoGain = 0.0;
-
-			for (int j = 0; j < dataCounts.get(i).size() / dataCounts.get(dataCounts.size() - 1).size(); j++) {
-				double ig = 0.0;
-				double divide = 0.0;
-				// System.out.println(j);
-				for (int k = j; k < dataCounts.get(i).size(); k += dataCounts.get(i).size()
-						/ dataCounts.get(dataCounts.size() - 1).size()) {
-					divide += (double) dataCounts.get(i).get(k).getValue();
-				}
-				// System.out.println("k += " + dataCounts.get(i).size() /
-				// dataCounts.get(dataCounts.size() - 1).size());
-				System.out.print(divide + "/" + totalRows + " (");
-				for (int k = j; k < dataCounts.get(i).size(); k += dataCounts.get(i).size()
-						/ dataCounts.get(dataCounts.size() - 1).size()) {
-					double val;
-					// System.out.println("j = " + j);
-					// System.out.println("k = " + k);
-					// System.out.println("num = " + dataCounts.get(i).size());
-					// System.out.println("divide = " +
-					// dataCounts.get(dataCounts.size()-1).get(count).getValue());
-
-					if (divide == 0)
-						val = 0;
-					else
-						val = (double) dataCounts.get(i).get(k).getValue() / (double) divide;
-
-					// System.out.println("count = " + dataCounts.get(i).get(k).getValue());
-					// System.out.println("divide = " + divide);
-					System.out.print(" -" + dataCounts.get(i).get(k).getValue() + "/" + divide + " * log2("
-							+ dataCounts.get(i).get(k).getValue() + "/" + divide + ")");
-					// System.out.println(totalRows);
-					// System.out.println("val = " + val);
-					// System.out.println("log val = " + log2(val));
-					if (val == 0)
-						ig -= val;
-					else
-						ig -= (val * log2(val));
-
-					// System.out.println("ig = " + ig);
-				}
-				// System.out.println("divide = " + divide);
-				// System.out.println("rows = " + totalRows);
-				System.out.println(")");
-				ig *= (divide / (double) totalRows);
-				infoGain += ig;
-				System.out.println("info gain = " + infoGain);
-			}
-			infoGain = informationGain.get(informationGain.size() - 1) - infoGain;
-			System.out.println("information gain for atttribute" + (i + 1) + " = " + infoGain);
-			informationGain.set(i, infoGain);
-		}
+		calcEntropy(dataCounts);
 		System.out.println(informationGain);
 		System.out.println("System has been trained.");
 
@@ -415,6 +348,63 @@ public class ID3DecisionTree {
 		double v = (double) Math.log(n) / (double) Math.log(2);
 		return v;
 	}
+	
+	private static void calcEntropy(ArrayList<ArrayList<Pair<String, Integer>>> c)
+	{
+		for (int i = 0; i < meta.size(); i++) {
+			informationGain.add(0.0);
+		}
+		double infoGain = 0.0;
+		int totalRows = 0;
+		for (int i = 0; i < meta.get(meta.size() - 1).size(); i++) {
+			totalRows += dataCounts.get(dataCounts.size() - 1).get(i).getValue();
+		}
+		for (int i = 0; i < dataCounts.get(dataCounts.size() - 1).size(); i++) {
+			double val = (double) dataCounts.get(dataCounts.size() - 1).get(i).getValue() / (double) totalRows;
+			infoGain += val * log2(val);
+		}
+		infoGain *= -1;
+		informationGain.set(informationGain.size() - 1, infoGain);
+		for (int i = 0; i < dataCounts.size() - 1; i++) {
+			infoGain = 0.0;
+
+			for (int j = 0; j < dataCounts.get(i).size() / dataCounts.get(dataCounts.size() - 1).size(); j++) {
+				double ig = 0.0;
+				double divide = 0.0;
+
+				for (int k = j; k < dataCounts.get(i).size(); k += dataCounts.get(i).size()
+						/ dataCounts.get(dataCounts.size() - 1).size()) {
+					divide += (double) dataCounts.get(i).get(k).getValue();
+				}
+				System.out.print(divide + "/" + totalRows + " (");
+				for (int k = j; k < dataCounts.get(i).size(); k += dataCounts.get(i).size()
+						/ dataCounts.get(dataCounts.size() - 1).size()) {
+					double val;
+
+					if (divide == 0)
+						val = 0;
+					else
+						val = (double) dataCounts.get(i).get(k).getValue() / (double) divide;
+
+					System.out.print(" -" + dataCounts.get(i).get(k).getValue() + "/" + divide + " * log2("
+							+ dataCounts.get(i).get(k).getValue() + "/" + divide + ")");
+					if (val == 0)
+						ig -= val;
+					else
+						ig -= (val * log2(val));
+
+				}
+	
+				System.out.println(")");
+				ig *= (divide / (double) totalRows);
+				infoGain += ig;
+				System.out.println("info gain = " + infoGain);
+			}
+			infoGain = informationGain.get(informationGain.size() - 1) - infoGain;
+			System.out.println("information gain for atttribute" + (i + 1) + " = " + infoGain);
+			informationGain.set(i, infoGain);
+		}
+	}
 }
 
 class Pair<K, V> {
@@ -500,6 +490,5 @@ class Node{
 	public void setValues(ArrayList<String> values) {
 		this.values = values;
 	}
-	
-	
+
 }
