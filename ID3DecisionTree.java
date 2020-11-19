@@ -250,7 +250,8 @@ public class ID3DecisionTree {
 			}
 			System.out.println();
 		}
-		// set the default value
+		
+		// set the default value -> change to function 
 		int max = 0;
 		for (int i = 0; i < dataCounts.get(dataCounts.size() - 1).size(); i++) {
 			if (dataCounts.get(dataCounts.size() - 1).get(i).getValue() > max) {
@@ -258,6 +259,7 @@ public class ID3DecisionTree {
 				defaultClass = dataCounts.get(dataCounts.size() - 1).get(i).getKey();
 			}
 		}
+		
 		// create tree
 		createTree();
 	}
@@ -358,8 +360,8 @@ public class ID3DecisionTree {
 		// not be picked again
 		// only if there was a maxIndex assigned
 		if (maxIndex >= 0) {
-			DecisionTree tree = new DecisionTree();
-			tree.setRoot(attributes.get(maxIndex));
+			//DecisionTree tree = new DecisionTree();
+			//tree.setRoot(attributes.get(maxIndex));
 			informationGain.set(maxIndex, -100.0);
 		}
 		// there are no more attributes able to be added so default and return
@@ -457,25 +459,47 @@ class Pair<K, V> {
 }
 
 class DecisionTree {
+	private Node root;
+	
+	
 
-	private ArrayList<String> tree = new ArrayList<>();
-	private String root;
+}
 
-	public ArrayList<String> getTree() {
-		return tree;
+class Node{
+	//label the node will be printed with
+	private String label;
+	//this boolean will determine if values will need to be populated
+	//leaf is true when the node label is a classification, false if it is an attribute
+	private boolean leaf;
+	//next sibling 
+	private Node sibling;
+	//the list of branches that will come from the node, attribute values
+	private ArrayList<String> values;
+	
+	public String getLabel() {
+		return label;
 	}
-
-	public void setTree(ArrayList<String> tree) {
-		this.tree = tree;
+	public void setLabel(String label) {
+		this.label = label;
 	}
-
-	public String getRoot() {
-		return root;
+	public boolean isLeaf() {
+		return leaf;
 	}
-
-	public void setRoot(String root) {
-		this.root = root;
-		tree.add(root);
+	public void setLeaf(boolean leaf) {
+		this.leaf = leaf;
 	}
-
+	public Node getSibling() {
+		return sibling;
+	}
+	public void setSibling(Node sibling) {
+		this.sibling = sibling;
+	}
+	public ArrayList<String> getValues() {
+		return values;
+	}
+	public void setValues(ArrayList<String> values) {
+		this.values = values;
+	}
+	
+	
 }
