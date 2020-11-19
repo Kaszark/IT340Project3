@@ -11,10 +11,14 @@ import javafx.util.Pair;
 public class ID3DecisionTree
 {
 	private static ArrayList<String> classifications = new ArrayList<>();
+	private static ArrayList<String> attributes = new ArrayList<>();
 	private static ArrayList<String> computedClassifications = new ArrayList<>();
 	private static ArrayList<ArrayList<String>> meta = new ArrayList<>();
 	private static ArrayList<ArrayList<Pair<String, Integer>>> dataCounts = new ArrayList<ArrayList<Pair<String, Integer>>>();
 	private static ArrayList<Double> informationGain = new ArrayList<Double>();
+	private static String defaultClass;
+	
+	private static DecisionTree decisionTree;
 
 	public static void main(String[] args)
 	{
@@ -100,6 +104,7 @@ public class ID3DecisionTree
 			{
 				meta.add(new ArrayList<String>());
 				String[] data = line.split(",|\\:");
+				attributes.add(data[0]);
 				for(int j = 1; j < data.length; j++)
 					meta.get(count).add(data[j]);	
 				count++;
@@ -268,6 +273,16 @@ public class ID3DecisionTree
 			}
 			System.out.println();
 		}
+		//set the default value
+		int max=0;
+		for(int i=0; i<dataCounts.get(dataCounts.size()-1).size(); i++) {
+			if(dataCounts.get(dataCounts.size()-1).get(i).getValue()>max) {
+				max=dataCounts.get(dataCounts.size()-1).get(i).getValue();
+				defaultClass=dataCounts.get(dataCounts.size()-1).get(i).getKey();
+			}
+		}
+		//create tree
+		createTree();
 	}
 	
 	private static void classify(String inF, String outF) {
@@ -286,7 +301,6 @@ public class ID3DecisionTree
 				for (int i = 0; i < data.length - 1; i++) {
 					fw.write(data[i] + ",");
 				}
-				
 				//use data to get a classification
 				classification=findClassification(data);
 				fw.write(classification + "\n");
@@ -324,6 +338,8 @@ public class ID3DecisionTree
 			while ((line = br.readLine()) != null) {
 				String[] data = line.split(",");
 				classifications.add(data[data.length - 1]);
+				//create tree
+//				createTree();
 				// classify instance
 				classify=findClassification(data);
 				computedClassifications.add(classify);
@@ -352,7 +368,51 @@ public class ID3DecisionTree
 		String formatted = String.format("%.2f", percent);
 		System.out.println(formatted+"% correct.");
 	}
-	
+	private static void createTree() {
+		//find the largest gain excluding the classification gain
+		double max=0.0;
+		int maxIndex=-1;
+		for(int i =0 ; i< informationGain.size()-2;i++) {
+			if(informationGain.get(i)>max) {
+				max=informationGain.get(i);
+				maxIndex=i;
+			}
+		}
+		//add the largest info gain to tree and then set the value to -100 so it will not be picked again
+		//only if there was a maxIndex assigned
+		if(maxIndex>=0) {
+			DecisionTree tree= new DecisionTree();
+			tree.setRoot(attributes.get(maxIndex));
+			informationGain.set(maxIndex, -100.0);
+		}
+		//there are no more attributes able to be added?
+		//I feel like this logic may be flawed but an out of bounds error will be thrown if maxIndex is used below
+		//when there are no more attributes.
+		else {
+			//assign each to default value? or check consensus im not sure
+		}
+		
+		//case if there is a consensus
+		int nonZero=0;
+		//check each value in meta of current index
+		for(int i =0 ; i< meta.get(maxIndex).size()-1;i++) {
+			//check each classification count using dataCounts[maxIndex]
+			for(int j=i; j<dataCounts.get(maxIndex).size(); j=j + meta.get(meta.size()-1).size()) {
+				if(dataCounts.get(maxIndex).get(j).getValue()!=0) {
+					nonZero++;
+				}
+			}
+			//if nonZero==1 then there is a consensus and the node will go to a classification
+			if(nonZero==1) {
+				//I am so confused how to build this tree
+			}
+
+			//this should call recursively and build a subtree that attaches to the value in meta that did not have a consensus
+			else {
+				createTree();
+			}
+		}
+	}
 	private static void printDecisionTree()
 	{
 		System.out.println("Decision Tree: ");
