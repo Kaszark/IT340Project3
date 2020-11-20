@@ -327,7 +327,7 @@ public class ID3DecisionTree {
 			// classification
 			if (nonZero == 1) {
 				// add classification to tree
-
+				//Node newNode = 
 			}
 
 			// this should call recursively and build a subtree that attaches to the value
@@ -470,6 +470,7 @@ class DecisionTree {
 }
 
 class Node {
+	private int nodeID;
 	// label the node will be printed with
 	private String label;
 	// this boolean will determine if values will need to be populated
@@ -480,6 +481,20 @@ class Node {
 	private Node sibling;
 	// the list of branches that will come from the node, attribute values
 	private ArrayList<String> values;
+
+	Node(int nodeID,boolean leaf,ArrayList<String> values){
+		this.nodeID = nodeID;
+		this.leaf =leaf;
+		this.values = values;
+	}
+	
+	public int getNodeID() {
+		return nodeID;
+	}
+
+	public void setNodeID(int nodeID) {
+		this.nodeID = nodeID;
+	}
 
 	public String getLabel() {
 		return label;
