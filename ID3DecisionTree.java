@@ -16,6 +16,8 @@ public class ID3DecisionTree {
 	private static ArrayList<Double> informationGain = new ArrayList<Double>();
 	private static String defaultClass;
 
+	private static DecisionTree tree = new DecisionTree();
+	private static ArrayList<Integer> tempData = new ArrayList<>();
 	static ArrayList<Integer> indexs = new ArrayList<>();
 
 	private static DecisionTree decisionTree;
@@ -195,8 +197,10 @@ public class ID3DecisionTree {
 			}
 		}
 
+		//populate classifications
+		classifications= meta.get(meta.size()-1);
 		// create tree
-		createTree();
+		tree=createTree();
 	}
 
 	private static void classify(String inF, String outF) {
@@ -281,7 +285,9 @@ public class ID3DecisionTree {
 		System.out.println(formatted + "% correct.");
 	}
 
-	private static void createTree() {
+	private static DecisionTree createTree() {
+		DecisionTree tempTree= new DecisionTree();
+
 		// find the largest gain excluding the classification gain
 		double max = 0.0;
 		double classGain=informationGain.get(informationGain.size()-1);
@@ -292,55 +298,79 @@ public class ID3DecisionTree {
 				maxIndex = i;
 			}
 		}
-		// only if there was a maxIndex assigned
+		// only if there was a maxIndex assigned make this the root of the tree
 		if (maxIndex >= 0) {
 			indexs.add(maxIndex);
+			tempData.clear();
 			for(int i =0; i<dataCounts.get(maxIndex).size();i++){
+				tempData.add(dataCounts.get(maxIndex).get(i).getValue());
 				dataCounts.get(maxIndex).get(i).setValue(0);
 			}
 			calcEntropy(dataCounts);
-		}
-		// there are no more attributes able to be added assign classification and return
-		else {
 			
-			return;
+			//set the root node of the tree/subtree
+			Node node =new Node(attributes.get(maxIndex), false, meta.get(maxIndex));
+			tempTree.setRoot(node);
+		}
+		
+		// there are no more attributes able to be added, assign default classification and return
+		else {
+			Node node =new Node("DEFAULT", true);
+			DecisionTree temp = new DecisionTree();
+			temp.setRoot(node);
+			tempTree.addChild(temp);
+			return temp;
 		}
 
 		// case if there is a consensus
 		int nonZero = 0;
+		int index=0;
+		int count=0;
 		// check each value in meta of current index
-		int savedIndex = 0;
-		int savedValue = 0;
 
-		for (int i = 0; i < meta.get(maxIndex).size() - 1; i++) {
-			// check each classification count using dataCounts[maxIndex]
-			for (int j = i; j < dataCounts.get(maxIndex).size(); j = j + meta.get(meta.size() - 1).size()) {
-//				System.out.println("Line 402: Max Index: " + maxIndex + ", j: " + j + ", "
-//						+ dataCounts.get(maxIndex).get(j).getValue());
-				if (dataCounts.get(maxIndex).get(j).getValue() != 0) {
-					nonZero++;
-					savedIndex = maxIndex;
-					savedValue = j;
-				}
+		for (int i = 0; i < meta.get(maxIndex).size(); i++) {
+			if(tempTree.getRoot().getLabel().equals("safety")) {
+				System.out.print(" " );
 			}
+			nonZero=0;
+			index=0;
+			count=0;
+			// check each classification count using dataCounts[maxIndex]
+			int dLength = tempData.size();
+			int vLength =  meta.get(maxIndex).size();
+			for (int j = i; j < dLength; j +=vLength) {
+				if (tempData.get(j)!= 0) {
+					nonZero++;
+					index=count;
+				}
+				count++;
+			}
+			
 			// if nonZero==1 then there is a consensus and the node will go to a
 			// classification
 			if (nonZero == 1) {
 				// add classification to tree
-				//Node newNode = 
+				Node node = new Node(classifications.get(index), true);
+				DecisionTree temp = new DecisionTree();
+				temp.setRoot(node);
+				tempTree.addChild(temp);
 			}
 
 			// this should call recursively and build a subtree that attaches to the value
 			// in meta that did not have a consensus
 			else {
-				createTree();
+				tempTree.addChild(createTree());
 			}
 		}
-
+		return tempTree;
 	}
 
 	private static void printDecisionTree() {
 		System.out.println("Decision Tree: ");
+		Node node = tree.getRoot();
+		while(!tree.getRoot().isLeaf()) {
+			System.out.println();
+		}
 	}
 
 	private static String findClassification(String[] data) {
@@ -465,36 +495,49 @@ class Pair<K, V> {
 }
 
 class DecisionTree {
+
 	private Node root;
+	private ArrayList<DecisionTree> children = new ArrayList<>();
+	
+	public void addChild(DecisionTree subTree) {
+		children.add(subTree);
+	}
+	
+	public Node getRoot() {
+		return root;
+	}
+
+	public void setRoot(Node root) {
+		this.root = root;
+	}
+
 
 }
 
 class Node {
-	private int nodeID;
 	// label the node will be printed with
 	private String label;
 	// this boolean will determine if values will need to be populated
 	// leaf is true when the node label is a classification, false if it is an
 	// attribute
 	private boolean leaf;
-	// next sibling
-	private Node sibling;
+	
 	// the list of branches that will come from the node, attribute values
 	private ArrayList<String> values;
 
-	Node(int nodeID,boolean leaf,ArrayList<String> values){
-		this.nodeID = nodeID;
+	//for attribute node
+	Node(String label, boolean leaf,ArrayList<String> values){
+		this.label = label;
 		this.leaf =leaf;
 		this.values = values;
 	}
 	
-	public int getNodeID() {
-		return nodeID;
+	//for classification node
+	Node(String label, boolean leaf){
+		this.label=label;
+		this.leaf=leaf;
 	}
 
-	public void setNodeID(int nodeID) {
-		this.nodeID = nodeID;
-	}
 
 	public String getLabel() {
 		return label;
@@ -511,15 +554,6 @@ class Node {
 	public void setLeaf(boolean leaf) {
 		this.leaf = leaf;
 	}
-
-	public Node getSibling() {
-		return sibling;
-	}
-
-	public void setSibling(Node sibling) {
-		this.sibling = sibling;
-	}
-
 	public ArrayList<String> getValues() {
 		return values;
 	}
