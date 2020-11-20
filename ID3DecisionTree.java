@@ -16,6 +16,8 @@ public class ID3DecisionTree {
 	private static ArrayList<Double> informationGain = new ArrayList<Double>();
 	private static String defaultClass;
 
+	static ArrayList<Integer> indexs = new ArrayList<>();
+
 	private static DecisionTree decisionTree;
 
 	public static void main(String[] args) {
@@ -173,18 +175,18 @@ public class ID3DecisionTree {
 			}
 		}
 		calcEntropy(dataCounts);
-		System.out.println(informationGain);
+//		System.out.println(informationGain);
 		System.out.println("System has been trained.");
 
 		for (int i = 0; i < dataCounts.size(); i++) {
 			for (int j = 0; j < dataCounts.get(i).size(); j++) {
-				System.out.print(dataCounts.get(i).get(j).getKey() + "=");
-				System.out.print(dataCounts.get(i).get(j).getValue() + " ");
+//				System.out.print(dataCounts.get(i).get(j).getKey() + "=");
+//				System.out.print(dataCounts.get(i).get(j).getValue() + " ");
 			}
-			System.out.println();
+//			System.out.println();
 		}
-		
-		// set the default value -> change to function 
+
+		// set the default value -> change to function
 		int max = 0;
 		for (int i = 0; i < dataCounts.get(dataCounts.size() - 1).size(); i++) {
 			if (dataCounts.get(dataCounts.size() - 1).get(i).getValue() > max) {
@@ -192,7 +194,7 @@ public class ID3DecisionTree {
 				defaultClass = dataCounts.get(dataCounts.size() - 1).get(i).getKey();
 			}
 		}
-		
+
 		// create tree
 		createTree();
 	}
@@ -282,24 +284,25 @@ public class ID3DecisionTree {
 	private static void createTree() {
 		// find the largest gain excluding the classification gain
 		double max = 0.0;
+		double classGain=informationGain.get(informationGain.size()-1);
 		int maxIndex = -1;
-		for (int i = 0; i < informationGain.size() - 2; i++) {
-			if (informationGain.get(i) > max) {
+		for (int i = 0; i < informationGain.size() - 1; i++) {
+			if (informationGain.get(i) > max&&classGain!=informationGain.get(i)) {
 				max = informationGain.get(i);
 				maxIndex = i;
 			}
 		}
-		// add the largest info gain to tree and then set the value to -100 so it will
-		// not be picked again
 		// only if there was a maxIndex assigned
 		if (maxIndex >= 0) {
-			//DecisionTree tree = new DecisionTree();
-			//tree.setRoot(attributes.get(maxIndex));
-			informationGain.set(maxIndex, -100.0);
+			indexs.add(maxIndex);
+			for(int i =0; i<dataCounts.get(maxIndex).size();i++){
+				dataCounts.get(maxIndex).get(i).setValue(0);
+			}
+			calcEntropy(dataCounts);
 		}
-		// there are no more attributes able to be added so default and return
+		// there are no more attributes able to be added assign classification and return
 		else {
-			// add default case to tree
+			
 			return;
 		}
 
@@ -348,9 +351,9 @@ public class ID3DecisionTree {
 		double v = (double) Math.log(n) / (double) Math.log(2);
 		return v;
 	}
-	
-	private static void calcEntropy(ArrayList<ArrayList<Pair<String, Integer>>> c)
-	{
+
+	private static void calcEntropy(ArrayList<ArrayList<Pair<String, Integer>>> c) {
+		informationGain.clear();
 		for (int i = 0; i < meta.size(); i++) {
 			informationGain.add(0.0);
 		}
@@ -365,7 +368,9 @@ public class ID3DecisionTree {
 		}
 		infoGain *= -1;
 		informationGain.set(informationGain.size() - 1, infoGain);
+		int h=0;
 		for (int i = 0; i < dataCounts.size() - 1; i++) {
+			
 			infoGain = 0.0;
 
 			for (int j = 0; j < dataCounts.get(i).size() / dataCounts.get(dataCounts.size() - 1).size(); j++) {
@@ -376,7 +381,7 @@ public class ID3DecisionTree {
 						/ dataCounts.get(dataCounts.size() - 1).size()) {
 					divide += (double) dataCounts.get(i).get(k).getValue();
 				}
-				System.out.print(divide + "/" + totalRows + " (");
+//				System.out.print(divide + "/" + totalRows + " (");
 				for (int k = j; k < dataCounts.get(i).size(); k += dataCounts.get(i).size()
 						/ dataCounts.get(dataCounts.size() - 1).size()) {
 					double val;
@@ -386,23 +391,34 @@ public class ID3DecisionTree {
 					else
 						val = (double) dataCounts.get(i).get(k).getValue() / (double) divide;
 
-					System.out.print(" -" + dataCounts.get(i).get(k).getValue() + "/" + divide + " * log2("
-							+ dataCounts.get(i).get(k).getValue() + "/" + divide + ")");
+//					System.out.print(" -" + dataCounts.get(i).get(k).getValue() + "/" + divide + " * log2("
+//							+ dataCounts.get(i).get(k).getValue() + "/" + divide + ")");
 					if (val == 0)
 						ig -= val;
 					else
 						ig -= (val * log2(val));
 
 				}
-	
-				System.out.println(")");
+
+//				System.out.println(")");
 				ig *= (divide / (double) totalRows);
 				infoGain += ig;
-				System.out.println("info gain = " + infoGain);
+//				System.out.println("info gain = " + infoGain);
 			}
 			infoGain = informationGain.get(informationGain.size() - 1) - infoGain;
-			System.out.println("information gain for atttribute" + (i + 1) + " = " + infoGain);
-			informationGain.set(i, infoGain);
+//			System.out.println("information gain for atttribute" + (i + 1) + " = " + infoGain);
+			if(dataCounts.size()==meta.size()) {
+				informationGain.set(i, infoGain);
+			}
+//			else if (indexs.contains(h)) {
+//				informationGain.set(h + 1, infoGain);
+//				h++;
+//			}
+//			else {
+//				informationGain.set(h, infoGain);
+//			}
+//			
+//			h++;
 		}
 	}
 }
@@ -450,43 +466,49 @@ class Pair<K, V> {
 
 class DecisionTree {
 	private Node root;
-	
-	
 
 }
 
-class Node{
-	//label the node will be printed with
+class Node {
+	// label the node will be printed with
 	private String label;
-	//this boolean will determine if values will need to be populated
-	//leaf is true when the node label is a classification, false if it is an attribute
+	// this boolean will determine if values will need to be populated
+	// leaf is true when the node label is a classification, false if it is an
+	// attribute
 	private boolean leaf;
-	//next sibling 
+	// next sibling
 	private Node sibling;
-	//the list of branches that will come from the node, attribute values
+	// the list of branches that will come from the node, attribute values
 	private ArrayList<String> values;
-	
+
 	public String getLabel() {
 		return label;
 	}
+
 	public void setLabel(String label) {
 		this.label = label;
 	}
+
 	public boolean isLeaf() {
 		return leaf;
 	}
+
 	public void setLeaf(boolean leaf) {
 		this.leaf = leaf;
 	}
+
 	public Node getSibling() {
 		return sibling;
 	}
+
 	public void setSibling(Node sibling) {
 		this.sibling = sibling;
 	}
+
 	public ArrayList<String> getValues() {
 		return values;
 	}
+
 	public void setValues(ArrayList<String> values) {
 		this.values = values;
 	}
